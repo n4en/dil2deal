@@ -51,16 +51,16 @@ const DealsFilterBar: React.FC<DealsFilterBarProps> = ({
   clearFilters
 }) => {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 flex flex-wrap gap-3 items-center border border-gray-200 dark:border-gray-700 mt-4 mb-8">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 flex flex-wrap md:flex-nowrap gap-3 items-center border border-gray-200 dark:border-gray-700 mt-4 mb-8 flex-col sm:flex-row">
       <input
         type="text"
         placeholder="Search deals..."
-        className="form-control border border-gray-300 bg-gray-50 dark:bg-gray-900 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 w-40 md:w-48"
+        className="form-control w-full sm:w-40 md:w-48"
         value={search}
         onChange={e => setSearch(e.target.value)}
       />
       <select
-        className="form-control border border-gray-300 bg-gray-50 dark:bg-gray-900 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 w-36"
+        className="form-control w-full sm:w-36"
         value={category}
         onChange={e => setCategory(e.target.value)}
       >
@@ -70,7 +70,7 @@ const DealsFilterBar: React.FC<DealsFilterBarProps> = ({
         ))}
       </select>
       <select
-        className="form-control border border-gray-300 bg-gray-50 dark:bg-gray-900 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 w-32"
+        className="form-control w-full sm:w-32"
         value={stateId}
         onChange={e => setStateId(e.target.value)}
       >
@@ -80,7 +80,7 @@ const DealsFilterBar: React.FC<DealsFilterBarProps> = ({
         ))}
       </select>
       <select
-        className="form-control border border-gray-300 bg-gray-50 dark:bg-gray-900 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 w-32"
+        className="form-control w-full sm:w-32"
         value={districtId}
         onChange={e => setDistrictId(e.target.value)}
         disabled={!stateId}
@@ -91,7 +91,7 @@ const DealsFilterBar: React.FC<DealsFilterBarProps> = ({
         ))}
       </select>
       <select
-        className="form-control border border-gray-300 bg-gray-50 dark:bg-gray-900 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 w-32"
+        className="form-control w-full sm:w-32"
         value={placeId}
         onChange={e => setPlaceId(e.target.value)}
         disabled={!districtId}
@@ -102,12 +102,12 @@ const DealsFilterBar: React.FC<DealsFilterBarProps> = ({
         ))}
       </select>
       <button
-        className="btn btn--primary"
+        className="btn btn--primary w-full sm:w-auto"
         onClick={clearFilters}
       >
         Clear Filters
       </button>
-      <div className="ml-auto flex items-center gap-2 md:ml-4 mt-2 md:mt-0">
+      <div className="ml-auto flex items-center gap-2 md:ml-4 mt-2 md:mt-0 w-full sm:w-auto justify-end">
         <label htmlFor="toggle-expired" className="text-xs font-semibold text-teal-700 dark:text-teal-300 select-none">Show Expired</label>
         <button
           id="toggle-expired"
