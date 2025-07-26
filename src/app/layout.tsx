@@ -30,6 +30,11 @@ export default function RootLayout({
       >
         <Header />
         {children}
+        <footer className="w-full border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 py-6 mt-12">
+          <div className="container mx-auto px-4 text-center text-sm text-gray-500 dark:text-gray-400">
+            &copy; {new Date().getFullYear()} Dil2Deal. All rights reserved.
+          </div>
+        </footer>
       </body>
     </html>
   );
