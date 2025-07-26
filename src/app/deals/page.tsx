@@ -55,7 +55,8 @@ interface Deal {
 }
 
 // Cache for location data to avoid repeated API calls
-const locationCache = new Map<string, any>();
+const districtsCache = new Map<string, District[]>();
+const placesCache = new Map<string, Place[]>();
 
 function DealsPageContent() {
   const searchParams = useSearchParams();
@@ -125,9 +126,12 @@ function DealsPageContent() {
   const fetchDistricts = useCallback(async (stateId: string) => {
     const cacheKey = `districts-${stateId}`;
     
-    if (locationCache.has(cacheKey)) {
-      setDistricts(locationCache.get(cacheKey));
-      return;
+    if (districtsCache.has(cacheKey)) {
+      const cachedDistricts = districtsCache.get(cacheKey);
+      if (cachedDistricts) {
+        setDistricts(cachedDistricts);
+        return;
+      }
     }
 
     setLoadingDistricts(true);
@@ -136,7 +140,7 @@ function DealsPageContent() {
       const data = await response.json();
       
       if (Array.isArray(data)) {
-        locationCache.set(cacheKey, data);
+        districtsCache.set(cacheKey, data);
         setDistricts(data);
       } else {
         setDistricts([]);
@@ -153,9 +157,12 @@ function DealsPageContent() {
   const fetchPlaces = useCallback(async (districtId: string) => {
     const cacheKey = `places-${districtId}`;
     
-    if (locationCache.has(cacheKey)) {
-      setPlaces(locationCache.get(cacheKey));
-      return;
+    if (placesCache.has(cacheKey)) {
+      const cachedPlaces = placesCache.get(cacheKey);
+      if (cachedPlaces) {
+        setPlaces(cachedPlaces);
+        return;
+      }
     }
 
     setLoadingPlaces(true);
@@ -164,7 +171,7 @@ function DealsPageContent() {
       const data = await response.json();
       
       if (Array.isArray(data)) {
-        locationCache.set(cacheKey, data);
+        placesCache.set(cacheKey, data);
         setPlaces(data);
       } else {
         setPlaces([]);
