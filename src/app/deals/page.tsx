@@ -70,6 +70,8 @@ function DealsPageContent() {
   const [districtId, setDistrictId] = useState('');
   const [placeId, setPlaceId] = useState('');
   const [showExpired, setShowExpired] = useState(false);
+  const [loadingDistricts, setLoadingDistricts] = useState(false);
+  const [loadingPlaces, setLoadingPlaces] = useState(false);
 
   // Update category if the URL changes (e.g., when navigating from home page)
   useEffect(() => {
@@ -111,8 +113,10 @@ function DealsPageContent() {
       .catch(() => setStates([]));
   }, []);
 
+  // Handle state selection - fetch districts
   useEffect(() => {
     if (stateId) {
+      setLoadingDistricts(true);
       fetch(`/api/locations/districts?stateId=${stateId}`)
         .then((res) => res.json())
         .then((data) => {
@@ -122,7 +126,10 @@ function DealsPageContent() {
             setDistricts([]);
           }
         })
-        .catch(() => setDistricts([]));
+        .catch(() => setDistricts([]))
+        .finally(() => setLoadingDistricts(false));
+      
+      // Clear dependent filters
       setDistrictId('');
       setPlaceId('');
       setPlaces([]);
@@ -134,8 +141,10 @@ function DealsPageContent() {
     }
   }, [stateId]);
 
+  // Handle district selection - fetch places
   useEffect(() => {
     if (districtId) {
+      setLoadingPlaces(true);
       fetch(`/api/locations/places?districtId=${districtId}`)
         .then((res) => res.json())
         .then((data) => {
@@ -145,7 +154,10 @@ function DealsPageContent() {
             setPlaces([]);
           }
         })
-        .catch(() => setPlaces([]));
+        .catch(() => setPlaces([]))
+        .finally(() => setLoadingPlaces(false));
+      
+      // Clear dependent filter
       setPlaceId('');
     } else {
       setPlaces([]);
@@ -181,6 +193,14 @@ function DealsPageContent() {
     setFilteredDeals(filtered);
   }, [search, category, stateId, districtId, placeId, deals, showExpired]);
 
+  const clearFilters = () => {
+    setSearch('');
+    setCategory('');
+    setStateId('');
+    setDistrictId('');
+    setPlaceId('');
+  };
+
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
       <div className="container mx-auto px-4">
@@ -201,7 +221,9 @@ function DealsPageContent() {
           places={places}
           showExpired={showExpired}
           setShowExpired={setShowExpired}
-          clearFilters={() => { setSearch(''); setCategory(''); setStateId(''); setDistrictId(''); setPlaceId(''); }}
+          loadingDistricts={loadingDistricts}
+          loadingPlaces={loadingPlaces}
+          clearFilters={clearFilters}
         />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {filteredDeals.length === 0 ? (
@@ -209,7 +231,7 @@ function DealsPageContent() {
               <div className="text-5xl mb-4">🔍</div>
               <div className="text-lg font-semibold mb-2">No deals found</div>
               <div className="mb-4">Try adjusting your filters or search terms</div>
-              <button className="btn btn--outline" onClick={() => { setSearch(''); setCategory(''); setStateId(''); setDistrictId(''); setPlaceId(''); }}>Clear Filters</button>
+              <button className="btn btn--outline" onClick={clearFilters}>Clear Filters</button>
             </div>
           ) : (
             filteredDeals.map((deal) => (

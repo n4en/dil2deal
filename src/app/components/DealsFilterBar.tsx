@@ -38,6 +38,8 @@ interface DealsFilterBarProps {
   places: Place[];
   showExpired: boolean;
   setShowExpired: (v: boolean) => void;
+  loadingDistricts?: boolean;
+  loadingPlaces?: boolean;
   clearFilters: () => void;
 }
 
@@ -48,6 +50,8 @@ const DealsFilterBar: React.FC<DealsFilterBarProps> = ({
   districtId, setDistrictId, districts,
   placeId, setPlaceId, places,
   showExpired, setShowExpired,
+  loadingDistricts = false,
+  loadingPlaces = false,
   clearFilters
 }) => {
   return (
@@ -84,23 +88,27 @@ const DealsFilterBar: React.FC<DealsFilterBarProps> = ({
           ))}
         </select>
         <select
-          className="form-control w-full sm:w-36"
+          className={`form-control w-full sm:w-36 ${loadingDistricts ? 'opacity-50 cursor-not-allowed' : ''}`}
           value={districtId}
           onChange={e => setDistrictId(e.target.value)}
-          disabled={!stateId}
+          disabled={!stateId || loadingDistricts}
         >
-          <option value="">All Districts</option>
+          <option value="">
+            {loadingDistricts ? 'Loading...' : 'All Districts'}
+          </option>
           {Array.isArray(districts) && districts.map((d: District) => (
             <option key={d.id} value={d.id}>{d.name}</option>
           ))}
         </select>
         <select
-          className="form-control w-full sm:w-36"
+          className={`form-control w-full sm:w-36 ${loadingPlaces ? 'opacity-50 cursor-not-allowed' : ''}`}
           value={placeId}
           onChange={e => setPlaceId(e.target.value)}
-          disabled={!districtId}
+          disabled={!districtId || loadingPlaces}
         >
-          <option value="">All Places</option>
+          <option value="">
+            {loadingPlaces ? 'Loading...' : 'All Places'}
+          </option>
           {Array.isArray(places) && places.map((p: Place) => (
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
