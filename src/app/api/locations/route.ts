@@ -5,9 +5,18 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    const locations = await prisma.location.findMany();
+    const locations = await prisma.state.findMany({
+      include: {
+        districts: {
+          include: {
+            places: true
+          }
+        }
+      },
+      orderBy: { name: 'asc' }
+    });
     return NextResponse.json(locations);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch locations' }, { status: 500 });
   }
 } 

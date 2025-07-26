@@ -1,22 +1,71 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import DealCard from '../components/DealCard';
 import { useSearchParams } from 'next/navigation';
 import DealsFilterBar from '../components/DealsFilterBar';
 
-export default function DealsPage() {
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+interface State {
+  id: string;
+  name: string;
+}
+
+interface District {
+  id: string;
+  name: string;
+}
+
+interface Place {
+  id: string;
+  name: string;
+}
+
+interface Deal {
+  id: string;
+  name: string;
+  description: string;
+  discount: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  category: Category;
+  place: {
+    id: string;
+    name: string;
+    districtId: string;
+    district: {
+      id: string;
+      name: string;
+      stateId: string;
+      state: {
+        id: string;
+        name: string;
+      };
+    };
+  };
+  vendor: {
+    name: string;
+  };
+}
+
+function DealsPageContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || '';
 
-  const [deals, setDeals] = useState<any[]>([]);
-  const [filteredDeals, setFilteredDeals] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [filteredDeals, setFilteredDeals] = useState<Deal[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState(initialCategory);
-  const [states, setStates] = useState<any[]>([]);
-  const [districts, setDistricts] = useState<any[]>([]);
-  const [places, setPlaces] = useState<any[]>([]);
+  const [states, setStates] = useState<State[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [places, setPlaces] = useState<Place[]>([]);
   const [stateId, setStateId] = useState('');
   const [districtId, setDistrictId] = useState('');
   const [placeId, setPlaceId] = useState('');
@@ -127,7 +176,7 @@ export default function DealsPage() {
       filtered = filtered.filter((deal) => deal.place.districtId === districtId);
     }
     if (placeId) {
-      filtered = filtered.filter((deal) => deal.placeId === placeId);
+      filtered = filtered.filter((deal) => deal.place.id === placeId);
     }
     setFilteredDeals(filtered);
   }, [search, category, stateId, districtId, placeId, deals, showExpired]);
@@ -170,5 +219,13 @@ export default function DealsPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function DealsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 flex items-center justify-center">Loading...</div>}>
+      <DealsPageContent />
+    </Suspense>
   );
 } 

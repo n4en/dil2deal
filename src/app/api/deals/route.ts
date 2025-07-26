@@ -23,7 +23,7 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json(deals);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch deals' }, { status: 500 });
   }
 }
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       },
     });
     return NextResponse.json(deal, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to create deal' }, { status: 500 });
   }
 } 

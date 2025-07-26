@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       data: { user, rating, comment, dealId },
     });
     return NextResponse.json(review, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to add review' }, { status: 500 });
   }
 } 

@@ -5,9 +5,36 @@ import DealCard from './components/DealCard';
 import CategoryCard from './components/CategoryCard';
 import Link from 'next/link';
 
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+interface Deal {
+  id: string;
+  name: string;
+  description: string;
+  discount: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  category: Category;
+  place?: {
+    name?: string;
+    district?: {
+      name?: string;
+      state?: {
+        name?: string;
+      };
+    };
+  };
+  vendor: { name: string };
+}
+
 export default function HomePage() {
-  const [featuredDeals, setFeaturedDeals] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [featuredDeals, setFeaturedDeals] = useState<Deal[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     fetch('/api/deals')
@@ -15,7 +42,7 @@ export default function HomePage() {
       .then((data) => {
         if (Array.isArray(data)) {
           const now = new Date();
-          const activeDeals = data.filter((deal: any) => deal.isActive && new Date(deal.endDate) >= now);
+          const activeDeals = data.filter((deal: Deal) => deal.isActive && new Date(deal.endDate) >= now);
           setFeaturedDeals(activeDeals.slice(0, 3));
         } else {
           setFeaturedDeals([]);
@@ -65,7 +92,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <h2 className="section-title mb-8 text-3xl font-semibold text-center">Browse by Category</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-            {Array.isArray(categories) && categories.map((cat: any) => (
+            {Array.isArray(categories) && categories.map((cat: Category) => (
               <CategoryCard key={cat.id} category={cat} onClick={() => window.location.href = `/deals?category=${cat.id}`} />
             ))}
           </div>

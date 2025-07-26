@@ -1,20 +1,41 @@
 import React from 'react';
 
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+interface State {
+  id: string;
+  name: string;
+}
+
+interface District {
+  id: string;
+  name: string;
+}
+
+interface Place {
+  id: string;
+  name: string;
+}
+
 interface DealsFilterBarProps {
   search: string;
   setSearch: (v: string) => void;
   category: string;
   setCategory: (v: string) => void;
-  categories: any[];
+  categories: Category[];
   stateId: string;
   setStateId: (v: string) => void;
-  states: any[];
+  states: State[];
   districtId: string;
   setDistrictId: (v: string) => void;
-  districts: any[];
+  districts: District[];
   placeId: string;
   setPlaceId: (v: string) => void;
-  places: any[];
+  places: Place[];
   showExpired: boolean;
   setShowExpired: (v: boolean) => void;
   clearFilters: () => void;
@@ -44,7 +65,7 @@ const DealsFilterBar: React.FC<DealsFilterBarProps> = ({
         onChange={e => setCategory(e.target.value)}
       >
         <option value="">All Categories</option>
-        {Array.isArray(categories) && categories.map((cat: any) => (
+        {Array.isArray(categories) && categories.map((cat: Category) => (
           <option key={cat.id} value={cat.id}>{cat.name}</option>
         ))}
       </select>
@@ -54,7 +75,7 @@ const DealsFilterBar: React.FC<DealsFilterBarProps> = ({
         onChange={e => setStateId(e.target.value)}
       >
         <option value="">All States</option>
-        {Array.isArray(states) && states.map((s: any) => (
+        {Array.isArray(states) && states.map((s: State) => (
           <option key={s.id} value={s.id}>{s.name}</option>
         ))}
       </select>
@@ -65,7 +86,7 @@ const DealsFilterBar: React.FC<DealsFilterBarProps> = ({
         disabled={!stateId}
       >
         <option value="">All Districts</option>
-        {Array.isArray(districts) && districts.map((d: any) => (
+        {Array.isArray(districts) && districts.map((d: District) => (
           <option key={d.id} value={d.id}>{d.name}</option>
         ))}
       </select>
@@ -76,7 +97,7 @@ const DealsFilterBar: React.FC<DealsFilterBarProps> = ({
         disabled={!districtId}
       >
         <option value="">All Places</option>
-        {Array.isArray(places) && places.map((p: any) => (
+        {Array.isArray(places) && places.map((p: Place) => (
           <option key={p.id} value={p.id}>{p.name}</option>
         ))}
       </select>

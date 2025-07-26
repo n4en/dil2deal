@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
       orderBy: { name: 'asc' },
     });
     return NextResponse.json(places);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch places' }, { status: 500 });
   }
 } 

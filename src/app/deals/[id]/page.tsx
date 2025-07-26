@@ -3,11 +3,59 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
+interface Review {
+  id: string;
+  user: string;
+  rating: number;
+  comment: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+interface Vendor {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+}
+
+interface Place {
+  id: string;
+  name: string;
+  district: {
+    id: string;
+    name: string;
+    state: {
+      id: string;
+      name: string;
+    };
+  };
+}
+
+interface Deal {
+  id: string;
+  name: string;
+  description: string;
+  discount: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  category: Category;
+  place: Place;
+  vendor: Vendor;
+  reviews: Review[];
+}
+
 export default function DealDetailPage() {
   const params = useParams();
   const router = useRouter();
   const dealId = params?.id as string;
-  const [deal, setDeal] = useState<any>(null);
+  const [deal, setDeal] = useState<Deal | null>(null);
   const [review, setReview] = useState({ user: '', rating: 5, comment: '' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -17,7 +65,7 @@ export default function DealDetailPage() {
       fetch(`/api/deals`)
         .then((res) => res.json())
         .then((data) => {
-          const found = data.find((d: any) => d.id === dealId);
+          const found = data.find((d: Deal) => d.id === dealId);
           setDeal(found);
         });
     }
@@ -38,7 +86,7 @@ export default function DealDetailPage() {
       fetch(`/api/deals`)
         .then((res) => res.json())
         .then((data) => {
-          const found = data.find((d: any) => d.id === dealId);
+          const found = data.find((d: Deal) => d.id === dealId);
           setDeal(found);
         });
     } else {
@@ -93,7 +141,7 @@ export default function DealDetailPage() {
             <div className="text-gray-500 dark:text-gray-300 mb-4">No reviews yet. Be the first to review this deal!</div>
           ) : (
             <div className="space-y-4 mb-4">
-              {deal.reviews.map((r: any) => (
+              {deal.reviews.map((r: Review) => (
                 <div key={r.id} className="border-b border-gray-200 dark:border-gray-700 pb-2">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-semibold text-gray-900 dark:text-white">{r.user}</span>

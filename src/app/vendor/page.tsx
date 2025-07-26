@@ -5,12 +5,33 @@ import { useRouter } from 'next/navigation';
 import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+interface State {
+  id: string;
+  name: string;
+}
+
+interface District {
+  id: string;
+  name: string;
+}
+
+interface Place {
+  id: string;
+  name: string;
+}
+
 export default function VendorPage() {
   const router = useRouter();
-  const [categories, setCategories] = useState<any[]>([]);
-  const [states, setStates] = useState<any[]>([]);
-  const [districts, setDistricts] = useState<any[]>([]);
-  const [places, setPlaces] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [states, setStates] = useState<State[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [places, setPlaces] = useState<Place[]>([]);
   const [stateId, setStateId] = useState('');
   const [districtId, setDistrictId] = useState('');
   const [placeId, setPlaceId] = useState('');
@@ -161,7 +182,7 @@ export default function VendorPage() {
                 <label className="form-label font-medium text-gray-700 dark:text-gray-200">Category *</label>
                 <select className="form-control border border-gray-300 bg-gray-50 dark:bg-gray-900 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500" name="categoryId" value={form.categoryId} onChange={handleChange} required>
                   <option value="">Select Category</option>
-                  {Array.isArray(categories) && categories.map((cat: any) => (
+                  {Array.isArray(categories) && categories.map((cat: Category) => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
                 </select>
@@ -211,21 +232,21 @@ export default function VendorPage() {
                 <label className="form-label font-medium text-gray-700 dark:text-gray-200">State *</label>
                 <select className="form-control border border-gray-300 bg-gray-50 dark:bg-gray-900 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500" value={stateId} onChange={e => setStateId(e.target.value)} required>
                   <option value="">Select State</option>
-                  {Array.isArray(states) && states.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  {Array.isArray(states) && states.map((s: State) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-2">
                 <label className="form-label font-medium text-gray-700 dark:text-gray-200">District *</label>
                 <select className="form-control border border-gray-300 bg-gray-50 dark:bg-gray-900 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500" value={districtId} onChange={e => setDistrictId(e.target.value)} required disabled={!stateId}>
                   <option value="">Select District</option>
-                  {Array.isArray(districts) && districts.map((d: any) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                  {Array.isArray(districts) && districts.map((d: District) => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-2">
                 <label className="form-label font-medium text-gray-700 dark:text-gray-200">City/Place *</label>
                 <select className="form-control border border-gray-300 bg-gray-50 dark:bg-gray-900 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500" value={placeId} onChange={e => setPlaceId(e.target.value)} required disabled={!districtId}>
                   <option value="">Select Place</option>
-                  {Array.isArray(places) && places.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  {Array.isArray(places) && places.map((p: Place) => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
             </div>
