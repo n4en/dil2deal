@@ -133,3 +133,234 @@ body {
   outline: 2px solid #14b8a6;
   outline-offset: 2px;
 }
+
+/* Smooth animations and transitions */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Animation classes */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Enhanced card hover effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.card-hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.card-hover:hover::before {
+  left: 100%;
+}
+
+/* Gradient backgrounds for better visual appeal */
+.gradient-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-bg-teal {
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+}
+
+/* Enhanced button animations */
+.btn-animate {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-animate:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn-animate:active {
+  transform: translateY(0);
+}
+
+/* Loading animations */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Form control animations */
+.form-control {
+  @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200;
+}
+
+/* Search input specific styles */
+.form-control[type="text"] {
+  padding-left: 2rem; /* Ensure text doesn't overlap with icon */
+}
+
+/* Ensure search icon positioning */
+.search-icon {
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Mobile-specific focus improvements */
+@media (max-width: 768px) {
+  .form-control:focus {
+    @apply ring-1 ring-teal-500 border-teal-500;
+    outline: none;
+    box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.2);
+  }
+  
+  /* Reduce focus ring intensity on mobile */
+  .form-control:focus {
+    ring-width: 1px;
+    ring-color: rgb(20 184 166);
+  }
+  
+  /* Cleaner select focus on mobile */
+  select.form-control:focus {
+    @apply ring-1 ring-teal-500 border-teal-500;
+    outline: none;
+    box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.2);
+  }
+  
+  /* Subtle focus shadow */
+  .focus\:shadow-sm:focus {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Cleaner input focus */
+  input.form-control:focus {
+    @apply ring-1 ring-teal-500 border-teal-500;
+    outline: none;
+    box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.2);
+  }
+}
+
+/* Mobile-specific dropdown fixes */
+@media (max-width: 768px) {
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+    position: relative;
+    z-index: 9999;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Ensure dropdowns appear above other content on mobile */
+  .relative {
+    position: relative;
+  }
+  
+  /* Higher z-index for mobile dropdowns */
+  select:focus {
+    z-index: 9999;
+  }
+  
+  /* Force dropdown to appear above everything on mobile */
+  select[style*="zIndex: 9999"] {
+    z-index: 9999 !important;
+  }
+  
+  /* Ensure the select container has proper positioning */
+  .relative > select {
+    position: relative;
+    z-index: 9999;
+  }
+  
+  /* Force all selects to have high z-index on mobile */
+  select {
+    z-index: 9999 !important;
+  }
+  
+  /* Ensure the filter container doesn't clip dropdowns */
+  .overflow-hidden {
+    overflow: visible !important;
+  }
+  
+  /* Ensure proper width containment */
+  .w-full {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Ensure grid items don't overflow */
+  .grid > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+}
+
+/* Ensure proper stacking context for mobile */
+@media (max-width: 768px) {
+  .z-50 {
+    z-index: 9999 !important;
+  }
+  
+  .z-10 {
+    z-index: 1 !important;
+  }
+}

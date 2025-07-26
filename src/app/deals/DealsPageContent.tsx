@@ -4,7 +4,8 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import DealCard from '../components/DealCard';
 import { useSearchParams } from 'next/navigation';
 import DealsFilterBar from '../components/DealsFilterBar';
-import Skeleton from '../components/Skeleton';
+import { SkeletonGrid } from '../components/Skeleton';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { useDebounce } from '../hooks/useDebounce';
 
 interface Category {
@@ -21,11 +22,13 @@ interface State {
 interface District {
   id: string;
   name: string;
+  stateId: string;
 }
 
 interface Place {
   id: string;
   name: string;
+  districtId: string;
 }
 
 interface Deal {
@@ -52,8 +55,14 @@ interface Deal {
     };
   };
   vendor: {
+    id: string;
     name: string;
   };
+  reviews: Array<{
+    id: string;
+    rating: number;
+    dealId: string;
+  }>;
 }
 
 const districtsCache = new Map<string, District[]>();
@@ -85,6 +94,10 @@ export default function DealsPageContent({
   const [loadingDistricts, setLoadingDistricts] = useState(false);
   const [loadingPlaces, setLoadingPlaces] = useState(false);
   const [isFiltering, setIsFiltering] = useState(false);
+  const [showLoadMore, setShowLoadMore] = useState(false);
+  const [displayedDeals, setDisplayedDeals] = useState<Deal[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const dealsPerPage = 12;
 
   // Debounce search for better performance
   const debouncedSearch = useDebounce(search, 300);
@@ -94,7 +107,7 @@ export default function DealsPageContent({
     setCategory(searchParams.get('category') || '');
   }, [searchParams]);
 
-  // Optimized district fetching with caching
+  // Optimized district fetching with caching and error handling
   const fetchDistricts = useCallback(async (stateId: string) => {
     const cacheKey = `districts-${stateId}`;
     if (districtsCache.has(cacheKey)) {
@@ -106,7 +119,16 @@ export default function DealsPageContent({
     }
     setLoadingDistricts(true);
     try {
-      const response = await fetch(`/api/locations/districts?stateId=${stateId}`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      
+      const response = await fetch(`/api/locations/districts?stateId=${stateId}`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) throw new Error('Failed to fetch districts');
+      
       const data = await response.json();
       if (Array.isArray(data)) {
         districtsCache.set(cacheKey, data);
@@ -114,14 +136,15 @@ export default function DealsPageContent({
       } else {
         setDistricts([]);
       }
-    } catch {
+    } catch (error) {
+      console.error('Error fetching districts:', error);
       setDistricts([]);
     } finally {
       setLoadingDistricts(false);
     }
   }, []);
 
-  // Optimized places fetching with caching
+  // Optimized places fetching with caching and error handling
   const fetchPlaces = useCallback(async (districtId: string) => {
     const cacheKey = `places-${districtId}`;
     if (placesCache.has(cacheKey)) {
@@ -133,7 +156,16 @@ export default function DealsPageContent({
     }
     setLoadingPlaces(true);
     try {
-      const response = await fetch(`/api/locations/places?districtId=${districtId}`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      
+      const response = await fetch(`/api/locations/places?districtId=${districtId}`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) throw new Error('Failed to fetch places');
+      
       const data = await response.json();
       if (Array.isArray(data)) {
         placesCache.set(cacheKey, data);
@@ -141,7 +173,8 @@ export default function DealsPageContent({
       } else {
         setPlaces([]);
       }
-    } catch {
+    } catch (error) {
+      console.error('Error fetching places:', error);
       setPlaces([]);
     } finally {
       setLoadingPlaces(false);
@@ -174,7 +207,7 @@ export default function DealsPageContent({
     }
   }, [districtId, fetchPlaces]);
 
-  // Memoized filtering logic for better performance
+  // Optimized filtering logic with memoization
   const applyFilters = useCallback(() => {
     setIsFiltering(true);
     
@@ -213,6 +246,7 @@ export default function DealsPageContent({
       }
       
       setFilteredDeals(filtered);
+      setCurrentPage(1); // Reset to first page when filters change
       setIsFiltering(false);
     });
   }, [initialDeals, debouncedSearch, category, stateId, districtId, placeId, showExpired]);
@@ -221,64 +255,127 @@ export default function DealsPageContent({
     applyFilters();
   }, [applyFilters]);
 
+  // Pagination logic
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * dealsPerPage;
+    const endIndex = startIndex + dealsPerPage;
+    const dealsToShow = filteredDeals.slice(startIndex, endIndex);
+    setDisplayedDeals(dealsToShow);
+    setShowLoadMore(endIndex < filteredDeals.length);
+  }, [filteredDeals, currentPage]);
+
+  const loadMore = useCallback(() => {
+    setCurrentPage(prev => prev + 1);
+  }, []);
+
   const clearFilters = useCallback(() => {
     setSearch('');
     setCategory('');
     setStateId('');
     setDistrictId('');
     setPlaceId('');
+    setCurrentPage(1);
   }, []);
 
   const handleDealClick = useCallback((dealId: string) => {
     window.location.href = `/deals/${dealId}`;
   }, []);
 
-  // Memoized skeleton array to prevent unnecessary re-renders
-  const skeletonArray = useMemo(() => Array.from({ length: 6 }), []);
+  // Memoize stats
+  const stats = useMemo(() => ({
+    totalDeals: filteredDeals.length,
+    showingDeals: displayedDeals.length,
+    hasMore: showLoadMore
+  }), [filteredDeals.length, displayedDeals.length, showLoadMore]);
 
   // Show skeletons if loading or filtering
-  const showSkeletons = filteredDeals.length === 0 && (isFiltering || initialDeals.length === 0);
+  const showSkeletons = isFiltering || (filteredDeals.length === 0 && initialDeals.length === 0);
+
+  // When rendering DealCard, ensure reviews is always present
+  const safeDisplayedDeals = useMemo(() => displayedDeals.map(deal => ({ ...deal, reviews: deal.reviews ?? [] })), [displayedDeals]);
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
-      <div className="container mx-auto px-4">
-        <DealsFilterBar
-          search={search}
-          setSearch={setSearch}
-          category={category}
-          setCategory={setCategory}
-          categories={categories}
-          stateId={stateId}
-          setStateId={setStateId}
-          states={states}
-          districtId={districtId}
-          setDistrictId={setDistrictId}
-          districts={districts}
-          placeId={placeId}
-          setPlaceId={setPlaceId}
-          places={places}
-          showExpired={showExpired}
-          setShowExpired={setShowExpired}
-          loadingDistricts={loadingDistricts}
-          loadingPlaces={loadingPlaces}
-          clearFilters={clearFilters}
-        />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {showSkeletons ? (
-            skeletonArray.map((_, i) => <Skeleton key={i} />)
-          ) : filteredDeals.length === 0 ? (
-            <div className="col-span-full text-center text-gray-500 dark:text-gray-300 py-16 animate-fadein">
-              <div className="text-5xl mb-4">🔍</div>
-              <div className="text-lg font-semibold mb-2">No deals found</div>
-              <div className="mb-4">Try adjusting your filters or search terms</div>
-              <button className="btn btn--outline ripple" aria-label="Clear filters" onClick={clearFilters}>Clear Filters</button>
-            </div>
-          ) : (
-            filteredDeals.map((deal) => (
-              <div className="animate-fadein" key={deal.id}>
-                <DealCard deal={deal} onClick={() => handleDealClick(deal.id)} />
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+      <div className="container mx-auto px-4 max-w-7xl">
+        {/* Header with stats */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Browse Deals</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            {filteredDeals.length} deal{filteredDeals.length !== 1 ? 's' : ''} found
+          </p>
+        </div>
+
+        {/* Filter Bar with proper spacing to avoid navbar overlap */}
+        <div className="relative z-50 mb-6 mt-4">
+          <DealsFilterBar
+            search={debouncedSearch}
+            setSearch={setSearch}
+            category={category}
+            setCategory={setCategory}
+            stateId={stateId}
+            setStateId={setStateId}
+            districtId={districtId}
+            setDistrictId={setDistrictId}
+            placeId={placeId}
+            setPlaceId={setPlaceId}
+            showExpired={showExpired}
+            setShowExpired={setShowExpired}
+            categories={categories}
+            states={states}
+            districts={districts}
+            places={places}
+            loadingDistricts={loadingDistricts}
+            loadingPlaces={loadingPlaces}
+          />
+        </div>
+
+        {/* Deals Grid with lower z-index */}
+        <div className="relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {showSkeletons ? (
+              <SkeletonGrid />
+            ) : filteredDeals.length === 0 ? (
+              <div className="col-span-full text-center text-gray-500 dark:text-gray-300 py-16 animate-fadein">
+                <div className="text-5xl mb-4">🔍</div>
+                <div className="text-lg font-semibold mb-2">No deals found</div>
+                <div className="mb-4">Try adjusting your filters or search terms</div>
+                <button
+                  className="btn btn--outline ripple"
+                  aria-label="Clear filters"
+                  onClick={clearFilters}
+                >
+                  Clear Filters
+                </button>
               </div>
-            ))
+            ) : (
+              <>
+                {safeDisplayedDeals.map((deal) => (
+                  <div className="animate-fadein" key={deal.id}>
+                    <DealCard deal={deal} onClick={() => handleDealClick(deal.id)} />
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+
+          {/* Load More Button */}
+          {stats.hasMore && !showSkeletons && (
+            <div className="text-center mt-8">
+              <button
+                onClick={loadMore}
+                className="btn btn--outline"
+                disabled={isFiltering}
+              >
+                {isFiltering ? (
+                  <div className="flex items-center gap-2">
+                    <LoadingSpinner size="sm" />
+                    Loading...
+                  </div>
+                ) : (
+                  `Load More (${stats.totalDeals - stats.showingDeals} remaining)`
+                )}
+              </button>
+            </div>
           )}
         </div>
       </div>
