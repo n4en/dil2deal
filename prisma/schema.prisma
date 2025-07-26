@@ -1,0 +1,77 @@
+// Prisma schema for Local Deals Directory
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  icon      String
+  deals     Deal[]
+}
+
+model State {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  districts District[]
+}
+
+model District {
+  id      String   @id @default(uuid())
+  name    String
+  state   State    @relation(fields: [stateId], references: [id])
+  stateId String
+  places  Place[]
+  @@unique([name, stateId])
+}
+
+model Place {
+  id         String   @id @default(uuid())
+  name       String
+  district   District @relation(fields: [districtId], references: [id])
+  districtId String
+  deals      Deal[]
+  @@unique([name, districtId])
+}
+
+model Vendor {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  phone     String
+  email     String   @unique
+  deals     Deal[]
+}
+
+model Deal {
+  id          String     @id @default(uuid())
+  name        String
+  description String
+  discount    String
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean    @default(true)
+  categoryId  String
+  category    Category   @relation(fields: [categoryId], references: [id])
+  placeId     String
+  place       Place      @relation(fields: [placeId], references: [id])
+  vendorId    String
+  vendor      Vendor     @relation(fields: [vendorId], references: [id])
+  reviews     Review[]
+  createdAt   DateTime   @default(now())
+}
+
+model Review {
+  id      String   @id @default(uuid())
+  user    String
+  rating  Int
+  comment String
+  dealId  String
+  deal    Deal     @relation(fields: [dealId], references: [id])
+}
