@@ -22,7 +22,15 @@ export async function GET(
           }
         },
         vendor: true,
-        reviews: true,
+        reviews: {
+          select: {
+            id: true,
+            user: true,
+            rating: true,
+            comment: true,
+            dealId: true
+          }
+        },
       },
     });
 
@@ -32,8 +40,12 @@ export async function GET(
 
     // Add caching headers for better performance
     const response = NextResponse.json(deal);
-    response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=600'); // Cache for 5 minutes
-    response.headers.set('ETag', `deal-${dealId}-${deal.createdAt.getTime()}`);
+    // Set aggressive caching for better performance
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    response.headers.set('ETag', `"deal-${deal.id}-${deal.createdAt.getTime()}"`);
+    response.headers.set('Vary', 'Accept-Encoding');
     
     return response;
   } catch (error) {

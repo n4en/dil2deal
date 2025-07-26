@@ -1,11 +1,9 @@
 import React from 'react';
 import VendorPageContent from './VendorPageContent';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../lib/prisma';
 
 // Server-side data fetching
 async function fetchVendorData() {
-  const prisma = new PrismaClient();
-  
   try {
     const [categories, states] = await Promise.all([
       prisma.category.findMany({
@@ -20,8 +18,6 @@ async function fetchVendorData() {
   } catch (error) {
     console.error('Error fetching vendor data:', error);
     return { categories: [], states: [] };
-  } finally {
-    await prisma.$disconnect();
   }
 }
 

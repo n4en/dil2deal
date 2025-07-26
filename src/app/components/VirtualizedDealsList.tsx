@@ -29,8 +29,14 @@ interface Deal {
     };
   };
   vendor: {
+    id: string;
     name: string;
   };
+  reviews: Array<{
+    id: string;
+    rating: number;
+    dealId: string;
+  }>;
 }
 
 interface VirtualizedDealsListProps {
@@ -65,6 +71,9 @@ const VirtualizedDealsList: React.FC<VirtualizedDealsListProps> = React.memo(fun
     return deals.slice(visibleRange.startIndex, visibleRange.endIndex);
   }, [deals, visibleRange]);
 
+  // When rendering DealCard, ensure reviews is always present
+  const safeVisibleDeals = useMemo(() => visibleDeals.map(deal => ({ ...deal, reviews: deal.reviews ?? [] })), [visibleDeals]);
+
   const totalHeight = deals.length * itemHeight;
   const offsetY = visibleRange.startIndex * itemHeight;
 
@@ -87,7 +96,7 @@ const VirtualizedDealsList: React.FC<VirtualizedDealsListProps> = React.memo(fun
             right: 0
           }}
         >
-          {visibleDeals.map((deal) => (
+          {safeVisibleDeals.map((deal) => (
             <div
               key={deal.id}
               style={{ height: itemHeight }}

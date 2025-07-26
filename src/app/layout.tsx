@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "./components/Header";
 import PerformanceMonitor from "./components/PerformanceMonitor";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const geist = Geist({
   variable: "--font-geist-sans",
@@ -86,9 +87,11 @@ export default function RootLayout({
         />
       </head>
       <body className={`${geist.className} antialiased`}>
-        <PerformanceMonitor />
-        <Header />
-        {children}
+        <ErrorBoundary>
+          <PerformanceMonitor />
+          <Header />
+          {children}
+        </ErrorBoundary>
       </body>
     </html>
   );
