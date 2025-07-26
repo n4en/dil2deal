@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useState, Suspense, useCallback } from 'react';
 import DealCard from '../components/DealCard';
 import { useSearchParams } from 'next/navigation';
 import DealsFilterBar from '../components/DealsFilterBar';
@@ -54,6 +54,9 @@ interface Deal {
   };
 }
 
+// Cache for location data to avoid repeated API calls
+const locationCache = new Map<string, any>();
+
 function DealsPageContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || '';
@@ -72,63 +75,112 @@ function DealsPageContent() {
   const [showExpired, setShowExpired] = useState(false);
   const [loadingDistricts, setLoadingDistricts] = useState(false);
   const [loadingPlaces, setLoadingPlaces] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   // Update category if the URL changes (e.g., when navigating from home page)
   useEffect(() => {
     setCategory(searchParams.get('category') || '');
   }, [searchParams]);
 
+  // Optimized initial data loading - fetch all data in parallel
   useEffect(() => {
-    fetch('/api/deals')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setDeals(data);
-          setFilteredDeals(data);
-        } else {
-          setDeals([]);
-          setFilteredDeals([]);
+    const fetchInitialData = async () => {
+      setInitialLoading(true);
+      try {
+        const [dealsRes, categoriesRes, statesRes] = await Promise.all([
+          fetch('/api/deals'),
+          fetch('/api/categories'),
+          fetch('/api/locations/states')
+        ]);
+
+        const [dealsData, categoriesData, statesData] = await Promise.all([
+          dealsRes.json(),
+          categoriesRes.json(),
+          statesRes.json()
+        ]);
+
+        if (Array.isArray(dealsData)) {
+          setDeals(dealsData);
+          setFilteredDeals(dealsData);
         }
-      })
-      .catch(() => { setDeals([]); setFilteredDeals([]); });
-    fetch('/api/categories')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setCategories(data);
-        } else {
-          setCategories([]);
+
+        if (Array.isArray(categoriesData)) {
+          setCategories(categoriesData);
         }
-      })
-      .catch(() => setCategories([]));
-    fetch('/api/locations/states')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setStates(data);
-        } else {
-          setStates([]);
+
+        if (Array.isArray(statesData)) {
+          setStates(statesData);
         }
-      })
-      .catch(() => setStates([]));
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, []);
+
+  // Optimized district fetching with caching
+  const fetchDistricts = useCallback(async (stateId: string) => {
+    const cacheKey = `districts-${stateId}`;
+    
+    if (locationCache.has(cacheKey)) {
+      setDistricts(locationCache.get(cacheKey));
+      return;
+    }
+
+    setLoadingDistricts(true);
+    try {
+      const response = await fetch(`/api/locations/districts?stateId=${stateId}`);
+      const data = await response.json();
+      
+      if (Array.isArray(data)) {
+        locationCache.set(cacheKey, data);
+        setDistricts(data);
+      } else {
+        setDistricts([]);
+      }
+    } catch (error) {
+      console.error('Error fetching districts:', error);
+      setDistricts([]);
+    } finally {
+      setLoadingDistricts(false);
+    }
+  }, []);
+
+  // Optimized places fetching with caching
+  const fetchPlaces = useCallback(async (districtId: string) => {
+    const cacheKey = `places-${districtId}`;
+    
+    if (locationCache.has(cacheKey)) {
+      setPlaces(locationCache.get(cacheKey));
+      return;
+    }
+
+    setLoadingPlaces(true);
+    try {
+      const response = await fetch(`/api/locations/places?districtId=${districtId}`);
+      const data = await response.json();
+      
+      if (Array.isArray(data)) {
+        locationCache.set(cacheKey, data);
+        setPlaces(data);
+      } else {
+        setPlaces([]);
+      }
+    } catch (error) {
+      console.error('Error fetching places:', error);
+      setPlaces([]);
+    } finally {
+      setLoadingPlaces(false);
+    }
   }, []);
 
   // Handle state selection - fetch districts
   useEffect(() => {
     if (stateId) {
-      setLoadingDistricts(true);
-      fetch(`/api/locations/districts?stateId=${stateId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (Array.isArray(data)) {
-            setDistricts(data);
-          } else {
-            setDistricts([]);
-          }
-        })
-        .catch(() => setDistricts([]))
-        .finally(() => setLoadingDistricts(false));
-      
+      fetchDistricts(stateId);
       // Clear dependent filters
       setDistrictId('');
       setPlaceId('');
@@ -139,67 +191,84 @@ function DealsPageContent() {
       setPlaceId('');
       setPlaces([]);
     }
-  }, [stateId]);
+  }, [stateId, fetchDistricts]);
 
   // Handle district selection - fetch places
   useEffect(() => {
     if (districtId) {
-      setLoadingPlaces(true);
-      fetch(`/api/locations/places?districtId=${districtId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (Array.isArray(data)) {
-            setPlaces(data);
-          } else {
-            setPlaces([]);
-          }
-        })
-        .catch(() => setPlaces([]))
-        .finally(() => setLoadingPlaces(false));
-      
+      fetchPlaces(districtId);
       // Clear dependent filter
       setPlaceId('');
     } else {
       setPlaces([]);
       setPlaceId('');
     }
-  }, [districtId]);
+  }, [districtId, fetchPlaces]);
 
-  useEffect(() => {
+  // Optimized filtering with useCallback to prevent unnecessary re-computations
+  const applyFilters = useCallback(() => {
     let filtered = deals;
     const now = new Date();
+    
     if (!showExpired) {
       filtered = filtered.filter((deal) => deal.isActive && new Date(deal.endDate) >= now);
     }
+    
     if (search) {
+      const searchLower = search.toLowerCase();
       filtered = filtered.filter((deal) =>
-        deal.name.toLowerCase().includes(search.toLowerCase()) ||
-        deal.description.toLowerCase().includes(search.toLowerCase()) ||
-        deal.vendor.name.toLowerCase().includes(search.toLowerCase())
+        deal.name.toLowerCase().includes(searchLower) ||
+        deal.description.toLowerCase().includes(searchLower) ||
+        deal.vendor.name.toLowerCase().includes(searchLower)
       );
     }
+    
     if (category) {
       filtered = filtered.filter((deal) => deal.category.id === category);
     }
+    
     if (stateId) {
       filtered = filtered.filter((deal) => deal.place.district.stateId === stateId);
     }
+    
     if (districtId) {
       filtered = filtered.filter((deal) => deal.place.districtId === districtId);
     }
+    
     if (placeId) {
       filtered = filtered.filter((deal) => deal.place.id === placeId);
     }
+    
     setFilteredDeals(filtered);
-  }, [search, category, stateId, districtId, placeId, deals, showExpired]);
+  }, [deals, search, category, stateId, districtId, placeId, showExpired]);
 
-  const clearFilters = () => {
+  // Apply filters when any filter changes
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
+
+  const clearFilters = useCallback(() => {
     setSearch('');
     setCategory('');
     setStateId('');
     setDistrictId('');
     setPlaceId('');
-  };
+  }, []);
+
+  if (initialLoading) {
+    return (
+      <main className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center py-16">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-300">Loading deals...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
