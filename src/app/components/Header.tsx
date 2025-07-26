@@ -19,14 +19,15 @@ export default function Header() {
       <div className="container mx-auto px-4 flex items-center justify-between py-4">
         <Link
           href="/"
-          className="text-2xl font-bold text-teal-600 hover:text-teal-700 transition-colors duration-200"
+          className="text-2xl font-bold text-teal-600 hover:text-teal-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
         >
           Dil2Deal
         </Link>
         {/* Hamburger button for mobile */}
         <button
-          className="md:hidden flex items-center justify-center p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="md:hidden flex items-center justify-center p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ripple"
           aria-label="Open navigation menu"
+          aria-expanded={menuOpen}
           onClick={() => setMenuOpen((open) => !open)}
         >
           <svg
@@ -61,11 +62,13 @@ export default function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+              className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 ${
                 pathname === link.href
                   ? "text-teal-600 bg-teal-50 dark:bg-teal-900/20 font-semibold"
                   : "text-gray-600 dark:text-gray-300 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/10"
               }`}
+              tabIndex={0}
+              aria-current={pathname === link.href ? 'page' : undefined}
             >
               {link.label}
             </Link>
@@ -74,17 +77,19 @@ export default function Header() {
       </div>
       {/* Mobile nav dropdown */}
       {menuOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shadow-sm">
+        <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shadow-sm animate-fadein">
           <div className="flex flex-col items-center gap-2 py-4">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`w-full text-center px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                className={`w-full text-center px-3 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 ${
                   pathname === link.href
                     ? "text-teal-600 bg-teal-50 dark:bg-teal-900/20 font-semibold"
                     : "text-gray-600 dark:text-gray-300 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/10"
                 }`}
+                tabIndex={0}
+                aria-current={pathname === link.href ? 'page' : undefined}
                 onClick={() => setMenuOpen(false)}
               >
                 {link.label}
