@@ -12,11 +12,13 @@ type CategoryCardProps = {
 export default function CategoryCard({ category, onClick }: CategoryCardProps) {
   return (
     <div
-      className="w-full max-w-xs sm:max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 sm:p-6 flex flex-col items-center cursor-pointer hover:shadow-lg hover:border-teal-300 dark:hover:border-teal-600 transition-all duration-200 transform hover:scale-105"
+      className="card card--hover w-full max-w-xs sm:max-w-sm p-4 sm:p-6 flex flex-col items-center cursor-pointer"
       onClick={onClick}
     >
-      <span className="text-4xl sm:text-5xl mb-2 sm:mb-3">{category.icon}</span>
-      <div className="font-semibold text-gray-900 dark:text-white text-center text-base sm:text-lg">{category.name}</div>
+      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-teal-50 dark:bg-teal-900/20 rounded-full flex items-center justify-center mb-3 sm:mb-4">
+        <span className="text-3xl sm:text-4xl">{category.icon}</span>
+      </div>
+      <div className="font-semibold text-gray-900 dark:text-white text-center text-sm sm:text-base leading-tight">{category.name}</div>
     </div>
   );
 } 
