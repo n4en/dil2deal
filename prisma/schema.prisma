@@ -29,6 +29,7 @@ model District {
   stateId String
   places  Place[]
   @@unique([name, stateId])
+  @@index([stateId])
 }
 
 model Place {
@@ -38,6 +39,7 @@ model Place {
   districtId String
   deals      Deal[]
   @@unique([name, districtId])
+  @@index([districtId])
 }
 
 model Vendor {
@@ -47,6 +49,7 @@ model Vendor {
   phone     String
   email     String   @unique
   deals     Deal[]
+  @@index([email])
 }
 
 model Deal {
@@ -65,6 +68,17 @@ model Deal {
   vendor      Vendor     @relation(fields: [vendorId], references: [id])
   reviews     Review[]
   createdAt   DateTime   @default(now())
+  
+  @@index([categoryId])
+  @@index([placeId])
+  @@index([vendorId])
+  @@index([isActive])
+  @@index([endDate])
+  @@index([createdAt])
+  @@index([name])
+  @@index([isActive, endDate])
+  @@index([categoryId, isActive])
+  @@index([placeId, isActive])
 }
 
 model Review {
@@ -74,4 +88,7 @@ model Review {
   comment String
   dealId  String
   deal    Deal     @relation(fields: [dealId], references: [id])
+  
+  @@index([dealId])
+  @@index([rating])
 }

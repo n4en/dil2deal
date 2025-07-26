@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 
 interface Category {
   id: string;
@@ -54,20 +54,32 @@ const DealsFilterBar: React.FC<DealsFilterBarProps> = ({
   loadingPlaces = false,
   clearFilters
 }) => {
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearch(searchInputRef.current?.value || '');
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [search, setSearch]);
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 flex flex-wrap md:flex-nowrap gap-4 items-center border border-gray-200 dark:border-gray-700 mt-4 mb-8 flex-col sm:flex-row">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 flex flex-wrap md:flex-nowrap gap-4 items-center border border-gray-200 dark:border-gray-700 mt-4 mb-8 flex-col sm:flex-row animate-fadein">
       <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
         <input
+          ref={searchInputRef}
           type="text"
           placeholder="Search deals..."
           className="form-control w-full sm:w-48 md:w-56"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
+          defaultValue={search}
+          aria-label="Search deals"
         />
         <select
-          className="form-control w-full sm:w-40"
+          className="form-control w-full sm:w-40 transition-all duration-300 ease-in-out focus:shadow-lg"
           value={category}
           onChange={e => setCategory(e.target.value)}
+          aria-label="Filter by category"
+          aria-expanded="true"
         >
           <option value="">All Categories</option>
           {Array.isArray(categories) && categories.map((cat: Category) => (
@@ -78,9 +90,11 @@ const DealsFilterBar: React.FC<DealsFilterBarProps> = ({
       
       <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
         <select
-          className="form-control w-full sm:w-36"
+          className="form-control w-full sm:w-36 transition-all duration-300 ease-in-out focus:shadow-lg"
           value={stateId}
           onChange={e => setStateId(e.target.value)}
+          aria-label="Filter by state"
+          aria-expanded="true"
         >
           <option value="">All States</option>
           {Array.isArray(states) && states.map((s: State) => (
@@ -88,10 +102,12 @@ const DealsFilterBar: React.FC<DealsFilterBarProps> = ({
           ))}
         </select>
         <select
-          className={`form-control w-full sm:w-36 ${loadingDistricts ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`form-control w-full sm:w-36 transition-all duration-300 ease-in-out focus:shadow-lg ${loadingDistricts ? 'opacity-50 cursor-not-allowed' : ''}`}
           value={districtId}
           onChange={e => setDistrictId(e.target.value)}
           disabled={!stateId || loadingDistricts}
+          aria-label="Filter by district"
+          aria-expanded={!!stateId}
         >
           <option value="">
             {loadingDistricts ? 'Loading...' : 'All Districts'}
@@ -101,10 +117,12 @@ const DealsFilterBar: React.FC<DealsFilterBarProps> = ({
           ))}
         </select>
         <select
-          className={`form-control w-full sm:w-36 ${loadingPlaces ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`form-control w-full sm:w-36 transition-all duration-300 ease-in-out focus:shadow-lg ${loadingPlaces ? 'opacity-50 cursor-not-allowed' : ''}`}
           value={placeId}
           onChange={e => setPlaceId(e.target.value)}
           disabled={!districtId || loadingPlaces}
+          aria-label="Filter by place"
+          aria-expanded={!!districtId}
         >
           <option value="">
             {loadingPlaces ? 'Loading...' : 'All Places'}

@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../../../lib/prisma';
 
 export async function GET() {
   try {
@@ -15,7 +13,12 @@ export async function GET() {
       },
       orderBy: { name: 'asc' }
     });
-    return NextResponse.json(locations);
+    
+    const response = NextResponse.json(locations);
+    response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=7200'); // Cache for 1 hour
+    response.headers.set('ETag', 'locations-all');
+    
+    return response;
   } catch {
     return NextResponse.json({ error: 'Failed to fetch locations' }, { status: 500 });
   }

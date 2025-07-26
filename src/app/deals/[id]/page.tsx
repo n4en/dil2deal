@@ -59,14 +59,27 @@ export default function DealDetailPage() {
   const [review, setReview] = useState({ user: '', rating: 5, comment: '' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (dealId) {
-      fetch(`/api/deals`)
-        .then((res) => res.json())
+      setLoading(true);
+      fetch(`/api/deals/${dealId}`)
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error('Deal not found');
+          }
+          return res.json();
+        })
         .then((data) => {
-          const found = data.find((d: Deal) => d.id === dealId);
-          setDeal(found);
+          setDeal(data);
+        })
+        .catch((error) => {
+          console.error('Error fetching deal:', error);
+          setError('Failed to load deal details');
+        })
+        .finally(() => {
+          setLoading(false);
         });
     }
   }, [dealId]);
@@ -83,11 +96,10 @@ export default function DealDetailPage() {
     if (res.ok) {
       setReview({ user: '', rating: 5, comment: '' });
       // Refresh deal data
-      fetch(`/api/deals`)
+      fetch(`/api/deals/${dealId}`)
         .then((res) => res.json())
         .then((data) => {
-          const found = data.find((d: Deal) => d.id === dealId);
-          setDeal(found);
+          setDeal(data);
         });
     } else {
       setError('Failed to add review');
@@ -95,8 +107,19 @@ export default function DealDetailPage() {
     setSubmitting(false);
   };
 
-  if (!deal) {
+  if (loading) {
     return <div className="container mx-auto px-4 py-16 text-center text-gray-500 dark:text-gray-300">Loading...</div>;
+  }
+
+  if (!deal) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center text-gray-500 dark:text-gray-300">
+        <div className="text-5xl mb-4">🔍</div>
+        <div className="text-lg font-semibold mb-2">Deal not found</div>
+        <div className="mb-4">The deal you&apos;re looking for doesn&apos;t exist or has been removed.</div>
+        <button className="btn btn--outline" onClick={() => router.back()}>Go Back</button>
+      </div>
+    );
   }
 
   const isActive = deal.isActive;
