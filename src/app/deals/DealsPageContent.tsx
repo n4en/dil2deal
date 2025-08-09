@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import DealCard from '../components/DealCard';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import DealsFilterBar from '../components/DealsFilterBar';
-import { SkeletonGrid } from '../components/Skeleton';
+import { OptimizedSkeletonGrid } from '../components/OptimizedSkeleton';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useDebounce } from '../hooks/useDebounce';
 
@@ -78,6 +78,7 @@ export default function DealsPageContent({
   initialStates: State[];
 }) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const initialCategory = searchParams.get('category') || '';
 
   const [filteredDeals, setFilteredDeals] = useState<Deal[]>(initialDeals);
@@ -277,9 +278,9 @@ export default function DealsPageContent({
     setCurrentPage(1);
   }, []);
 
-  const handleDealClick = useCallback((dealId: string) => {
-    window.location.href = `/deals/${dealId}`;
-  }, []);
+  const handleDealClick = useCallback((deal: Deal) => {
+    router.push(`/deals/${deal.id}`);
+  }, [router]);
 
   // Memoize stats
   const stats = useMemo(() => ({
@@ -333,7 +334,7 @@ export default function DealsPageContent({
         <div className="relative z-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {showSkeletons ? (
-              <SkeletonGrid />
+              <OptimizedSkeletonGrid count={8} />
             ) : filteredDeals.length === 0 ? (
               <div className="col-span-full text-center text-gray-500 dark:text-gray-300 py-16 animate-fadein">
                 <div className="text-5xl mb-4">🔍</div>
@@ -351,7 +352,7 @@ export default function DealsPageContent({
               <>
                 {safeDisplayedDeals.map((deal) => (
                   <div className="animate-fadein" key={deal.id}>
-                    <DealCard deal={deal} onClick={() => handleDealClick(deal.id)} />
+                    <DealCard deal={deal} onClick={() => handleDealClick(deal)} />
                   </div>
                 ))}
               </>

@@ -66,31 +66,55 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    // Fetch deals with pagination
+    // Optimized query with minimal data fetching
     const [deals, totalCount] = await Promise.all([
       prisma.deal.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          discount: true,
+          startDate: true,
+          endDate: true,
+          isActive: true,
+          createdAt: true,
           category: {
             select: { id: true, name: true, icon: true }
           },
           place: {
-            select: { id: true, name: true, districtId: true }
+            select: { 
+              id: true, 
+              name: true, 
+              districtId: true,
+              district: {
+                select: {
+                  id: true,
+                  name: true,
+                  stateId: true,
+                  state: {
+                    select: { id: true, name: true }
+                  }
+                }
+              }
+            }
           },
           vendor: {
             select: { id: true, name: true }
           },
           reviews: {
             select: { 
-              id: true, 
-              user: true,
-              rating: true, 
-              comment: true,
-              dealId: true 
-            }
+              id: true,
+              rating: true,
+              dealId: true
+            },
+            take: 5 // Limit reviews for performance
           }
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [
+          { isActive: 'desc' },
+          { createdAt: 'desc' }
+        ],
         take: limit,
         skip: offset
       }),

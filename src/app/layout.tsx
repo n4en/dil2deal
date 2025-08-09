@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "./components/Header";
 import PerformanceMonitor from "./components/PerformanceMonitor";
+import PerformanceDashboard from "./components/PerformanceDashboard";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 const geist = Geist({
@@ -91,6 +92,7 @@ export default function RootLayout({
           <PerformanceMonitor />
           <Header />
           {children}
+          <PerformanceDashboard />
         </ErrorBoundary>
       </body>
     </html>
