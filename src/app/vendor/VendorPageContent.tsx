@@ -63,7 +63,7 @@ export default function VendorPageContent({ initialCategories, initialStates }: 
   useEffect(() => {
     if (stateId) {
       setLoadingDistricts(true);
-      fetch(`/api/locations/districts?stateId=${stateId}`)
+      fetch(`/api/locations/districts?stateId=${stateId}&t=${Date.now()}`, { cache: 'no-store', credentials: 'same-origin' })
         .then((res) => res.json())
         .then((data) => {
           if (Array.isArray(data)) {
@@ -88,7 +88,7 @@ export default function VendorPageContent({ initialCategories, initialStates }: 
   useEffect(() => {
     if (districtId) {
       setLoadingPlaces(true);
-      fetch(`/api/locations/places?districtId=${districtId}`)
+      fetch(`/api/locations/places?districtId=${districtId}&t=${Date.now()}`, { cache: 'no-store', credentials: 'same-origin' })
         .then((res) => res.json())
         .then((data) => {
           if (Array.isArray(data)) {

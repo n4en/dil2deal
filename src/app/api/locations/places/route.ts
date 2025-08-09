@@ -24,8 +24,7 @@ export async function GET(req: NextRequest) {
     });
     
     const response = NextResponse.json(places);
-    response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=7200');
-    response.headers.set('ETag', `places-${districtId}`);
+    response.headers.set('Cache-Control', 'no-store');
     
     return response;
   } catch {

@@ -124,8 +124,10 @@ export default function DealsPageContent({
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
       try {
-        const response = await fetch(`/api/locations/districts?stateId=${stateId}`, {
+        const response = await fetch(`/api/locations/districts?stateId=${stateId}&t=${Date.now()}`, {
           signal: controller.signal,
+          cache: 'no-store',
+          credentials: 'same-origin',
         });
         clearTimeout(timeoutId);
         if (!response.ok) throw new Error('Failed to fetch districts');
@@ -173,8 +175,10 @@ export default function DealsPageContent({
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
       try {
-        const response = await fetch(`/api/locations/places?districtId=${districtId}`, {
+        const response = await fetch(`/api/locations/places?districtId=${districtId}&t=${Date.now()}`, {
           signal: controller.signal,
+          cache: 'no-store',
+          credentials: 'same-origin',
         });
         clearTimeout(timeoutId);
         if (!response.ok) throw new Error('Failed to fetch places');

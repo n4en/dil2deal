@@ -24,8 +24,7 @@ export async function GET(req: NextRequest) {
     });
     
     const response = NextResponse.json(districts);
-    response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=7200');
-    response.headers.set('ETag', `districts-${stateId}`);
+    response.headers.set('Cache-Control', 'no-store');
     
     return response;
   } catch {

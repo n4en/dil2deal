@@ -49,12 +49,21 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'no-store, must-revalidate' },
+        ],
+      },
+      {
+        source: '/api/locations/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'no-store' },
+        ],
+      },
+      {
         source: '/api/:path*',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, s-maxage=60, stale-while-revalidate=300',
-          },
+          { key: 'Cache-Control', value: 'public, s-maxage=60, stale-while-revalidate=300' },
         ],
       },
       {

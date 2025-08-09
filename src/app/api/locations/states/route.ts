@@ -17,8 +17,7 @@ export async function GET() {
     });
     
     const response = NextResponse.json(states);
-    response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=7200');
-    response.headers.set('ETag', 'states-all');
+    response.headers.set('Cache-Control', 'no-store');
     
     return response;
   } catch {

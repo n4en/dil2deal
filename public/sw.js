@@ -1,5 +1,5 @@
-const CACHE_NAME = 'dil2deal-v1';
-const STATIC_CACHE_NAME = 'dil2deal-static-v1';
+const CACHE_NAME = 'dil2deal-v2';
+const STATIC_CACHE_NAME = 'dil2deal-static-v2';
 
 const STATIC_ASSETS = [
   '/',
@@ -9,10 +9,9 @@ const STATIC_ASSETS = [
   '/api/locations/states'
 ];
 
+// Only cache deals API. Do NOT cache location APIs to avoid stale filters
 const API_CACHE_PATTERNS = [
-  /\/api\/deals/,
-  /\/api\/locations\/districts/,
-  /\/api\/locations\/places/
+  /\/api\/deals/
 ];
 
 // Install event - cache static assets
@@ -20,7 +19,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE_NAME).then((cache) => {
       return cache.addAll(STATIC_ASSETS);
-    })
+    }).then(() => self.skipWaiting())
   );
 });
 
@@ -35,7 +34,7 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
@@ -44,8 +43,13 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Handle API requests with caching
+  // Handle API requests with caching (deals only). Always bypass cache when t= or no-store requested
   if (API_CACHE_PATTERNS.some(pattern => pattern.test(url.pathname))) {
+    const bypass = url.searchParams.has('t') || request.headers.get('Cache-Control') === 'no-store';
+    if (bypass) {
+      event.respondWith(fetch(request));
+      return;
+    }
     event.respondWith(
       caches.open(CACHE_NAME).then((cache) => {
         return cache.match(request).then((response) => {
