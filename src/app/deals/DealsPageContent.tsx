@@ -119,23 +119,35 @@ export default function DealsPageContent({
       }
     }
     setLoadingDistricts(true);
-    try {
+
+    const attemptFetch = async () => {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-      
-      const response = await fetch(`/api/locations/districts?stateId=${stateId}`, {
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) throw new Error('Failed to fetch districts');
-      
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        districtsCache.set(cacheKey, data);
-        setDistricts(data);
-      } else {
-        setDistricts([]);
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      try {
+        const response = await fetch(`/api/locations/districts?stateId=${stateId}`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        if (!response.ok) throw new Error('Failed to fetch districts');
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          districtsCache.set(cacheKey, data);
+          setDistricts(data);
+        } else {
+          setDistricts([]);
+        }
+        return true;
+      } catch (err) {
+        clearTimeout(timeoutId);
+        return false;
+      }
+    };
+
+    try {
+      const ok = await attemptFetch();
+      if (!ok) {
+        // simple one-time retry
+        await attemptFetch();
       }
     } catch (error) {
       console.error('Error fetching districts:', error);
@@ -156,23 +168,34 @@ export default function DealsPageContent({
       }
     }
     setLoadingPlaces(true);
-    try {
+
+    const attemptFetch = async () => {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-      
-      const response = await fetch(`/api/locations/places?districtId=${districtId}`, {
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) throw new Error('Failed to fetch places');
-      
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        placesCache.set(cacheKey, data);
-        setPlaces(data);
-      } else {
-        setPlaces([]);
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      try {
+        const response = await fetch(`/api/locations/places?districtId=${districtId}`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        if (!response.ok) throw new Error('Failed to fetch places');
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          placesCache.set(cacheKey, data);
+          setPlaces(data);
+        } else {
+          setPlaces([]);
+        }
+        return true;
+      } catch (err) {
+        clearTimeout(timeoutId);
+        return false;
+      }
+    };
+
+    try {
+      const ok = await attemptFetch();
+      if (!ok) {
+        await attemptFetch();
       }
     } catch (error) {
       console.error('Error fetching places:', error);
@@ -309,7 +332,7 @@ export default function DealsPageContent({
         {/* Filter Bar with proper spacing to avoid navbar overlap */}
         <div className="relative z-50 mb-6 mt-4">
           <DealsFilterBar
-            search={debouncedSearch}
+            search={search}
             setSearch={setSearch}
             category={category}
             setCategory={setCategory}
